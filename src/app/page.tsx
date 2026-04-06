@@ -157,7 +157,6 @@ export default function Home() {
               <EmptyCategory 
                 title="Spotify Top 10" 
                 icon={<SpotifyIcon />}
-                apiKeyName="None (Free API)"
               />
             )}
 
@@ -172,7 +171,6 @@ export default function Home() {
               <EmptyCategory 
                 title="YouTube Trending" 
                 icon={<YouTubeIcon />}
-                apiKeyName="YOUTUBE_API_KEY"
               />
             )}
 
@@ -187,7 +185,6 @@ export default function Home() {
               <EmptyCategory 
                 title="Netflix Top 10" 
                 icon={<NetflixIcon />}
-                apiKeyName="APIFY_API_TOKEN"
               />
             )}
 
@@ -202,7 +199,6 @@ export default function Home() {
               <EmptyCategory 
                 title="Google Search Trends" 
                 icon={<GoogleIcon />}
-                apiKeyName="SERPAPI_API_KEY"
               />
             )}
           </div>
