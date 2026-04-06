@@ -92,10 +92,6 @@ export default function Home() {
     }
 
     fetchTrends();
-    
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchTrends, 5 * 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -203,18 +199,6 @@ export default function Home() {
             )}
           </div>
         )}
-
-        {/* Last Updated Info */}
-        {!loading && !error && data?.lastUpdated && (
-          <div className="mt-8 text-center text-sm text-zinc-400">
-            Last updated: {new Date(data.lastUpdated).toLocaleString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </div>
-        )}
       </main>
 
       {/* Footer */}
@@ -224,7 +208,14 @@ export default function Home() {
             © 2026 Trending Portal
           </p>
           <p className="text-xs text-zinc-400">
-            Data updated hourly
+            {!loading && !error && data?.lastUpdated
+              ? `Updated ${new Date(data.lastUpdated).toLocaleString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}`
+              : 'Loading...'}
           </p>
         </div>
       </footer>

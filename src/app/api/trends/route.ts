@@ -73,17 +73,24 @@ export async function GET() {
       };
     }
 
-    return NextResponse.json({
-      success: true,
-      data: categories,
-      sourceHealth,
-      meta: {
-        totalCategories: Object.values(categoryMap).filter(Boolean).length,
-        healthyCategories: Object.values(sourceHealth).filter(s => s.available && !s.stale).length,
-        staleCategories: Object.values(sourceHealth).filter(s => s.stale).length,
-        lastUpdated: categories.lastUpdated,
+    return NextResponse.json(
+      {
+        success: true,
+        data: categories,
+        sourceHealth,
+        meta: {
+          totalCategories: Object.values(categoryMap).filter(Boolean).length,
+          healthyCategories: Object.values(sourceHealth).filter(s => s.available && !s.stale).length,
+          staleCategories: Object.values(sourceHealth).filter(s => s.stale).length,
+          lastUpdated: categories.lastUpdated,
+        },
       },
-    });
+      {
+        headers: {
+          'Cache-Control': 'public, max-age=21600, stale-while-revalidate=43200',
+        }
+      }
+    );
 
   } catch (error) {
     console.error('[Trends] Failed to fetch trends:', error);
@@ -95,7 +102,12 @@ export async function GET() {
         message: error instanceof Error ? error.message : 'Unknown error',
         data: {},
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store',
+        }
+      }
     );
   }
 }
