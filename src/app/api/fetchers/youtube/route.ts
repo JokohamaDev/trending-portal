@@ -41,6 +41,9 @@ interface YouTubeApiResponse {
 async function fetchFromYouTubeAPI(): Promise<YouTubeVideo[]> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   
+  console.log('[YouTube Debug] API Key exists:', !!apiKey);
+  console.log('[YouTube Debug] API Key length:', apiKey?.length || 0);
+  
   if (!apiKey) {
     throw new Error('YOUTUBE_API_KEY environment variable not set');
   }
@@ -51,12 +54,15 @@ async function fetchFromYouTubeAPI(): Promise<YouTubeVideo[]> {
       headers: {
         Accept: 'application/json',
       },
-      next: { revalidate: 3600 }, // Cache for 1 hour
+      next: { revalidate: 0 }, // Don't cache - always fresh
     }
   );
 
+  console.log('[YouTube Debug] API response status:', response.status);
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
+    console.log('[YouTube Debug] API error:', JSON.stringify(errorData));
     
     // Check for quota exceeded error
     if (errorData?.error?.code === 403 || 
