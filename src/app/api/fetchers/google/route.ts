@@ -2,72 +2,83 @@ import { NextResponse } from 'next/server';
 import { storeCategoryDataSmart, getCategoryDataSmart, KV_KEYS } from '@/lib/kv';
 import { sanitizeTrendingItems } from '@/lib/validation';
 import type { CategoryData } from '@/lib/schemas';
-import googleTrends from 'google-trends-api';
 
 interface GoogleTrendItem {
   rank: number;
   title: string;
-  artist: string; // search volume or category
+  artist: string;
   thumbnailUrl: string | null;
   externalUrl: string;
   source: string;
   fetchedAt: string;
-  searchVolume?: string;
 }
 
-// Fetch from Google Trends API (free, unofficial)
-async function fetchFromGoogleTrends(): Promise<GoogleTrendItem[]> {
-  try {
-    // Get daily trending searches for Vietnam
-    const results = await googleTrends.dailyTrends({
-      geo: 'VN',
-    });
+// Parse Google Trends RSS feed (free, official)
+async function fetchFromGoogleTrendsRSS(): Promise<GoogleTrendItem[]> {
+  // Google Trends RSS for Vietnam - official feed
+  const rssUrl = 'https://trends.google.com/trending/rss?geo=VN';
+  
+  const response = await fetch(rssUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    },
+    next: { revalidate: 3600 },
+  });
 
-    const parsed = JSON.parse(results);
-    const trendingDays = parsed.default.trendingSearchesDays;
+  if (!response.ok) {
+    throw new Error(`Google Trends RSS responded with ${response.status}`);
+  }
+
+  const xml = await response.text();
+  
+  // Extract items from RSS XML - parse each item block independently
+  const items: GoogleTrendItem[] = [];
+  
+  // Split by item tags and process each
+  const itemBlocks = xml.split('<item>').slice(1); // Skip content before first item
+  
+  for (let i = 0; i < itemBlocks.length && items.length < 10; i++) {
+    const block = itemBlocks[i];
+    const endIndex = block.indexOf('</item>');
+    if (endIndex === -1) continue;
     
-    if (!trendingDays || trendingDays.length === 0) {
-      throw new Error('No trending data found in Google Trends response');
-    }
-
-    // Get today's trends (first day in the array)
-    const todayTrends = trendingDays[0].trendingSearches;
+    const itemContent = block.substring(0, endIndex);
     
-    if (!todayTrends || todayTrends.length === 0) {
-      throw new Error('No trends found for today');
-    }
-
-    // Transform to our format
-    return todayTrends.slice(0, 10).map((item: any, index: number) => {
-      const title = item.title.query;
-      const searchVolume = item.formattedTraffic || 'Trending';
-      const thumbnail = item.image?.imageUrl || null;
-      
-      return {
-        rank: index + 1,
-        title: title,
-        artist: searchVolume,
-        thumbnailUrl: thumbnail,
-        externalUrl: `https://www.google.com/search?q=${encodeURIComponent(title)}`,
+    // Extract fields using regex - order doesn't matter
+    const titleMatch = itemContent.match(/<title>([^<]*)<\/title>/);
+    const trafficMatch = itemContent.match(/<ht:approx_traffic>([^<]*)<\/ht:approx_traffic>/);
+    const pictureMatch = itemContent.match(/<ht:picture>([^<]*)<\/ht:picture>/);
+    const urlMatch = itemContent.match(/<ht:news_item_url>([^<]*)<\/ht:news_item_url>/);
+    
+    if (titleMatch && trafficMatch) {
+      items.push({
+        rank: items.length + 1,
+        title: titleMatch[1].trim(),
+        artist: trafficMatch[1].trim(),
+        thumbnailUrl: pictureMatch ? pictureMatch[1].trim() : null,
+        externalUrl: urlMatch ? urlMatch[1].trim() : `https://www.google.com/search?q=${encodeURIComponent(titleMatch[1].trim())}`,
         source: 'google',
         fetchedAt: new Date().toISOString(),
-        searchVolume: searchVolume,
-      };
-    });
-  } catch (error) {
-    throw new Error(`Google Trends API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      });
+    }
   }
+
+  if (items.length === 0) {
+    throw new Error('No items found in Google Trends RSS feed');
+  }
+
+  return items;
 }
 
 export async function GET() {
   try {
     let rawData: GoogleTrendItem[];
     
-    // Try to fetch fresh data from Google Trends via free API
+    // Try to fetch fresh data from Google Trends via RSS
     try {
-      rawData = await fetchFromGoogleTrends();
+      rawData = await fetchFromGoogleTrendsRSS();
     } catch (error) {
-      console.warn('[Google] Google Trends fetch failed, checking for cached data:', error);
+      console.warn('[Google] RSS fetch failed, checking for cached data:', error);
       
       // Return cached data if available
       const cachedData = await getCategoryDataSmart(KV_KEYS.GOOGLE);
@@ -105,7 +116,7 @@ export async function GET() {
     const categoryData: CategoryData = {
       items: validatedItems,
       lastUpdated: new Date().toISOString(),
-      source: 'google-trends-api',
+      source: 'google-trends-rss',
       healthy: true,
     };
     
@@ -116,7 +127,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: validatedItems,
-      source: 'google-trends-api',
+      source: 'google-trends-rss',
       cached: false,
       validated: true,
       count: validatedItems.length,
