@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getCategoryDataSmart, KV_KEYS } from '@/lib/kv';
 import { validateCategoryData } from '@/lib/validation';
 import type { TrendsData, CategoryData } from '@/lib/schemas';
@@ -33,8 +33,11 @@ function normalizeCategoryData(data: unknown): CategoryData | undefined {
   return undefined;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const refresh = searchParams.get('refresh') === '1';
+    
     // Fetch all categories from Redis/file cache
     const [spotifyRaw, youtubeRaw, netflixRaw, googleRaw] = await Promise.all([
       getCategoryDataSmart(KV_KEYS.SPOTIFY),
@@ -86,7 +89,9 @@ export async function GET() {
         },
       },
       {
-        headers: {
+        headers: refresh ? {
+          'Cache-Control': 'no-store',
+        } : {
           'Cache-Control': 'public, max-age=21600, stale-while-revalidate=43200',
         }
       }
