@@ -79,6 +79,13 @@ export default function Home() {
       const response = await fetch(url);
       const result: ApiResponse = await response.json();
       
+      console.log('[Debug] API Response:', {
+        success: result.success,
+        hasData: !!result.data,
+        youtubeExists: !!result.data?.youtube,
+        youtubeItemCount: result.data?.youtube?.items?.length || 0,
+      });
+      
       if (!response.ok || !result.success) {
         throw new Error(result.error || 'Failed to fetch trends');
       }
