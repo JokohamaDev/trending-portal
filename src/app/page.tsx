@@ -5,6 +5,7 @@ import { CategoryList } from '@/components/CategoryList';
 import { CategoryListSkeleton } from '@/components/CategoryListSkeleton';
 import { TrendsData } from '@/lib/schemas';
 import { mockTrendsData } from '@/lib/mockData';
+import { EmptyCategory } from '@/components/EmptyCategory';
 
 // Icons for categories
 function SpotifyIcon() {
@@ -118,6 +119,8 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <CategoryListSkeleton title="Spotify Top 10" icon={<SpotifyIcon />} />
             <CategoryListSkeleton title="YouTube Trending" icon={<YouTubeIcon />} />
+            <CategoryListSkeleton title="Netflix Top 10" icon={<NetflixIcon />} />
+            <CategoryListSkeleton title="Google Search Trends" icon={<GoogleIcon />} />
           </div>
         ) : error ? (
           // Error State
@@ -141,41 +144,65 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          // Data Display
+          // Data Display - Always show all 4 categories
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Spotify Category */}
-            {data?.spotify && (
+            {data?.spotify ? (
               <CategoryList
                 title="Spotify Top 10"
                 category={data.spotify}
                 icon={<SpotifyIcon />}
               />
+            ) : (
+              <EmptyCategory 
+                title="Spotify Top 10" 
+                icon={<SpotifyIcon />}
+                apiKeyName="None (Free API)"
+              />
             )}
 
             {/* YouTube Category */}
-            {data?.youtube && (
+            {data?.youtube ? (
               <CategoryList
                 title="YouTube Trending"
                 category={data.youtube}
                 icon={<YouTubeIcon />}
               />
+            ) : (
+              <EmptyCategory 
+                title="YouTube Trending" 
+                icon={<YouTubeIcon />}
+                apiKeyName="YOUTUBE_API_KEY"
+              />
             )}
 
             {/* Netflix Category */}
-            {data?.netflix && (
+            {data?.netflix ? (
               <CategoryList
                 title="Netflix Top 10"
                 category={data.netflix}
                 icon={<NetflixIcon />}
               />
+            ) : (
+              <EmptyCategory 
+                title="Netflix Top 10" 
+                icon={<NetflixIcon />}
+                apiKeyName="APIFY_API_TOKEN"
+              />
             )}
 
             {/* Google Category */}
-            {data?.google && (
+            {data?.google ? (
               <CategoryList
                 title="Google Search Trends"
                 category={data.google}
                 icon={<GoogleIcon />}
+              />
+            ) : (
+              <EmptyCategory 
+                title="Google Search Trends" 
+                icon={<GoogleIcon />}
+                apiKeyName="SERPAPI_API_KEY"
               />
             )}
           </div>

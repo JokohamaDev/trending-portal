@@ -151,8 +151,116 @@ export const mockYouTubeData = {
   healthy: true,
 };
 
+export const mockNetflixData = {
+  items: [
+    {
+      rank: 1,
+      title: "Squid Game",
+      artist: "TV Show",
+      thumbnailUrl: "https://image.tmdb.org/t/p/w200/dDlEmu3EZ0Pgg93K4SVNfMUkFa8.jpg",
+      externalUrl: "https://www.netflix.com/title/81040344",
+      source: "netflix",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+    {
+      rank: 2,
+      title: "The Witcher",
+      artist: "TV Show",
+      thumbnailUrl: "https://image.tmdb.org/t/p/w200/7vjaCdMw15FEbXy5w8PONoP9lNJ.jpg",
+      externalUrl: "https://www.netflix.com/title/80189685",
+      source: "netflix",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+    {
+      rank: 3,
+      title: "Extraction 2",
+      artist: "Movie",
+      thumbnailUrl: "https://image.tmdb.org/t/p/w200/7gKI9hpEMcZUQpRYyZ3vD8e1.jpg",
+      externalUrl: "https://www.netflix.com/title/81098494",
+      source: "netflix",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+    {
+      rank: 4,
+      title: "Stranger Things",
+      artist: "TV Show",
+      thumbnailUrl: "https://image.tmdb.org/t/p/w200/x2LSRK2Cm7MZhixp41132Km9xvd.jpg",
+      externalUrl: "https://www.netflix.com/title/80057281",
+      source: "netflix",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+    {
+      rank: 5,
+      title: "Money Heist",
+      artist: "TV Show",
+      thumbnailUrl: "https://image.tmdb.org/t/p/w200/MoEKaPFcABWXw3wm7N4qo7g2.jpg",
+      externalUrl: "https://www.netflix.com/title/80192098",
+      source: "netflix",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+  ],
+  lastUpdated: "2026-04-06T03:13:34.100Z",
+  source: "netflix-apify",
+  healthy: true,
+};
+
+export const mockGoogleData = {
+  items: [
+    {
+      rank: 1,
+      title: "Vietnam vs Thailand",
+      artist: "50K+ searches",
+      thumbnailUrl: null,
+      externalUrl: "https://www.google.com/search?q=Vietnam+vs+Thailand",
+      source: "google",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+    {
+      rank: 2,
+      title: "AFF Cup 2024",
+      artist: "30K+ searches",
+      thumbnailUrl: null,
+      externalUrl: "https://www.google.com/search?q=AFF+Cup+2024",
+      source: "google",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+    {
+      rank: 3,
+      title: "Tet Holiday",
+      artist: "25K+ searches",
+      thumbnailUrl: null,
+      externalUrl: "https://www.google.com/search?q=Tet+Holiday",
+      source: "google",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+    {
+      rank: 4,
+      title: "Vietnamese Coffee",
+      artist: "20K+ searches",
+      thumbnailUrl: null,
+      externalUrl: "https://www.google.com/search?q=Vietnamese+Coffee",
+      source: "google",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+    {
+      rank: 5,
+      title: "Ha Long Bay",
+      artist: "18K+ searches",
+      thumbnailUrl: null,
+      externalUrl: "https://www.google.com/search?q=Ha+Long+Bay",
+      source: "google",
+      fetchedAt: "2026-04-06T03:13:34.100Z",
+    },
+  ],
+  lastUpdated: "2026-04-06T03:13:34.100Z",
+  source: "google-serpapi",
+  healthy: true,
+};
+
 export const mockTrendsData: TrendsData = {
   spotify: mockSpotifyData,
   youtube: mockYouTubeData,
+  netflix: mockNetflixData,
+  google: mockGoogleData,
   lastUpdated: "2026-04-06T03:13:34.100Z",
 };
