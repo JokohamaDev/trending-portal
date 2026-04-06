@@ -1,5 +1,9 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { CategoryList } from '@/components/CategoryList';
-import { mockSpotifyData, mockYouTubeData } from '@/lib/mockData';
+import { CategoryListSkeleton } from '@/components/CategoryListSkeleton';
+import { TrendsData } from '@/lib/schemas';
 
 // Icons for categories
 function SpotifyIcon() {
@@ -18,7 +22,69 @@ function YouTubeIcon() {
   );
 }
 
+function NetflixIcon() {
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M5.398 0v.006c3.028 8.556 5.37 15.175 8.348 23.596 2.344.058 4.85.398 4.854.398-2.8-7.924-5.923-16.747-8.487-24zm8.489 0v9.63L18.6 22.951c-.043-7.86-.004-15.913.002-22.95zM5.398 1.05V24c1.873-.225 2.81-.312 4.715-.398v-9.22z"/>
+    </svg>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+    </svg>
+  );
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: TrendsData;
+  sourceHealth: Record<string, { available: boolean; stale: boolean }>;
+  meta: {
+    totalCategories: number;
+    healthyCategories: number;
+    staleCategories: number;
+    lastUpdated: string;
+  };
+  error?: string;
+}
+
 export default function Home() {
+  const [data, setData] = useState<TrendsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchTrends() {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch('/api/trends');
+        const result: ApiResponse = await response.json();
+        
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Failed to fetch trends');
+        }
+        
+        setData(result.data);
+      } catch (err) {
+        console.error('Failed to fetch trends:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load trends');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTrends();
+    
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchTrends, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* Header */}
@@ -35,30 +101,85 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Spotify Category */}
-          <CategoryList
-            title="Spotify Top 10"
-            category={mockSpotifyData}
-            icon={<SpotifyIcon />}
-          />
+        {loading ? (
+          // Loading State
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <CategoryListSkeleton title="Spotify Top 10" icon={<SpotifyIcon />} />
+            <CategoryListSkeleton title="YouTube Trending" icon={<YouTubeIcon />} />
+          </div>
+        ) : error ? (
+          // Error State
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+              Failed to load trending data
+            </h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+              {error}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          // Data Display
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Spotify Category */}
+            {data?.spotify && (
+              <CategoryList
+                title="Spotify Top 10"
+                category={data.spotify}
+                icon={<SpotifyIcon />}
+              />
+            )}
 
-          {/* YouTube Category */}
-          <CategoryList
-            title="YouTube Trending"
-            category={mockYouTubeData}
-            icon={<YouTubeIcon />}
-          />
-        </div>
+            {/* YouTube Category */}
+            {data?.youtube && (
+              <CategoryList
+                title="YouTube Trending"
+                category={data.youtube}
+                icon={<YouTubeIcon />}
+              />
+            )}
 
-        {/* Development Note */}
-        <div className="mt-12 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-          <p className="text-sm text-blue-700 dark:text-blue-300">
-            <strong>Development Mode:</strong> Currently displaying mock data. 
-            Connect to real APIs by setting up environment variables in 
-            <code className="px-1 py-0.5 rounded bg-blue-100 dark:bg-blue-800 mx-1">.env.local</code>
-          </p>
-        </div>
+            {/* Netflix Category */}
+            {data?.netflix && (
+              <CategoryList
+                title="Netflix Top 10"
+                category={data.netflix}
+                icon={<NetflixIcon />}
+              />
+            )}
+
+            {/* Google Category */}
+            {data?.google && (
+              <CategoryList
+                title="Google Search Trends"
+                category={data.google}
+                icon={<GoogleIcon />}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Last Updated Info */}
+        {!loading && !error && data?.lastUpdated && (
+          <div className="mt-8 text-center text-sm text-zinc-400">
+            Last updated: {new Date(data.lastUpdated).toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </div>
+        )}
       </main>
 
       {/* Footer */}
