@@ -58,6 +58,16 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  useEffect(() => {
+    if (cooldownSeconds > 0) {
+      const timer = setTimeout(() => {
+        setCooldownSeconds(cooldownSeconds - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldownSeconds]);
 
   const fetchTrends = async (forceRefresh = false) => {
     try {
@@ -110,7 +120,9 @@ export default function Home() {
   }, []);
 
   const handleRefresh = () => {
+    if (cooldownSeconds > 0) return;
     setRefreshing(true);
+    setCooldownSeconds(60);
     fetchTrends(true);
   };
 
@@ -125,9 +137,9 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <button
               onClick={handleRefresh}
-              disabled={loading || refreshing}
+              disabled={loading || refreshing || cooldownSeconds > 0}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              title="Refresh data (bypass cache)"
+              title={cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s to refresh again` : "Refresh data (bypass cache)"}
             >
               <svg 
                 className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} 
@@ -137,7 +149,7 @@ export default function Home() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              {refreshing ? 'Refreshing...' : 'Refresh'}
+              {refreshing ? 'Refreshing...' : cooldownSeconds > 0 ? `Refresh (${cooldownSeconds})` : 'Refresh'}
             </button>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:block">
               Real-time charts from Spotify, YouTube, Netflix & more
