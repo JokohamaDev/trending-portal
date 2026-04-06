@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { storeCategoryDataSmart, getCategoryDataSmart, KV_KEYS } from '@/lib/kv';
 import { sanitizeTrendingItems } from '@/lib/validation';
 import type { CategoryData } from '@/lib/schemas';
+import googleTrends from 'google-trends-api';
 
 interface GoogleTrendItem {
   rank: number;
@@ -14,79 +15,59 @@ interface GoogleTrendItem {
   searchVolume?: string;
 }
 
-interface SerpApiResponse {
-  trending_searches: Array<{
-    query: string;
-    search_volume?: string;
-    extracted_value?: number;
-    thumbnail?: string;
-  }>;
-  error?: string;
-}
+// Fetch from Google Trends API (free, unofficial)
+async function fetchFromGoogleTrends(): Promise<GoogleTrendItem[]> {
+  try {
+    // Get daily trending searches for Vietnam
+    const results = await googleTrends.dailyTrends({
+      geo: 'VN',
+    });
 
-// Fetch from SerpApi Google Trends
-async function fetchFromSerpApi(): Promise<GoogleTrendItem[]> {
-  const apiKey = process.env.SERPAPI_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('SERPAPI_API_KEY environment variable not set');
-  }
-
-  // SerpApi Google Trends endpoint for Vietnam
-  const params = new URLSearchParams({
-    engine: 'google_trends_trending_now',
-    hl: 'vi',
-    geo: 'VN',
-    api_key: apiKey,
-  });
-
-  const response = await fetch(
-    `https://serpapi.com/search?${params.toString()}`,
-    {
-      headers: {
-        Accept: 'application/json',
-      },
-      next: { revalidate: 3600 },
+    const parsed = JSON.parse(results);
+    const trendingDays = parsed.default.trendingSearchesDays;
+    
+    if (!trendingDays || trendingDays.length === 0) {
+      throw new Error('No trending data found in Google Trends response');
     }
-  );
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`SerpApi responded with ${response.status}: ${errorText}`);
-  }
+    // Get today's trends (first day in the array)
+    const todayTrends = trendingDays[0].trendingSearches;
+    
+    if (!todayTrends || todayTrends.length === 0) {
+      throw new Error('No trends found for today');
+    }
 
-  const data: SerpApiResponse = await response.json();
-  
-  if (data.error) {
-    throw new Error(`SerpApi error: ${data.error}`);
+    // Transform to our format
+    return todayTrends.slice(0, 10).map((item: any, index: number) => {
+      const title = item.title.query;
+      const searchVolume = item.formattedTraffic || 'Trending';
+      const thumbnail = item.image?.imageUrl || null;
+      
+      return {
+        rank: index + 1,
+        title: title,
+        artist: searchVolume,
+        thumbnailUrl: thumbnail,
+        externalUrl: `https://www.google.com/search?q=${encodeURIComponent(title)}`,
+        source: 'google',
+        fetchedAt: new Date().toISOString(),
+        searchVolume: searchVolume,
+      };
+    });
+  } catch (error) {
+    throw new Error(`Google Trends API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  
-  if (!data.trending_searches || data.trending_searches.length === 0) {
-    throw new Error('No trending searches found in SerpApi response');
-  }
-
-  // Transform SerpApi data to our format
-  return data.trending_searches.slice(0, 10).map((item, index) => ({
-    rank: index + 1,
-    title: item.query,
-    artist: item.search_volume ? `${item.search_volume} searches` : 'Trending',
-    thumbnailUrl: item.thumbnail || null,
-    externalUrl: `https://www.google.com/search?q=${encodeURIComponent(item.query)}`,
-    source: 'google',
-    fetchedAt: new Date().toISOString(),
-    searchVolume: item.search_volume,
-  }));
 }
 
 export async function GET() {
   try {
     let rawData: GoogleTrendItem[];
     
-    // Try to fetch fresh data from Google Trends via SerpApi
+    // Try to fetch fresh data from Google Trends via free API
     try {
-      rawData = await fetchFromSerpApi();
+      rawData = await fetchFromGoogleTrends();
     } catch (error) {
-      console.warn('[Google] SerpApi fetch failed, checking for cached data:', error);
+      console.warn('[Google] Google Trends fetch failed, checking for cached data:', error);
       
       // Return cached data if available
       const cachedData = await getCategoryDataSmart(KV_KEYS.GOOGLE);
@@ -124,7 +105,7 @@ export async function GET() {
     const categoryData: CategoryData = {
       items: validatedItems,
       lastUpdated: new Date().toISOString(),
-      source: 'google-serpapi',
+      source: 'google-trends-api',
       healthy: true,
     };
     
@@ -135,7 +116,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: validatedItems,
-      source: 'google-serpapi',
+      source: 'google-trends-api',
       cached: false,
       validated: true,
       count: validatedItems.length,

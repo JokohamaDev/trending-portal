@@ -85,8 +85,8 @@ async function fetchFromYouTubeAPI(): Promise<YouTubeVideo[]> {
     title: item.snippet.title,
     artist: item.snippet.channelTitle,
     thumbnailUrl: item.snippet.thumbnails?.medium?.url || 
-                  item.snippet.thumbnails?.default?.url || 
-                  item.snippet.thumbnails?.high?.url || null,
+                  item.snippet.thumbnails?.high?.url || 
+                  item.snippet.thumbnails?.default?.url || null,
     externalUrl: `https://youtube.com/watch?v=${item.id}`,
     source: 'youtube',
     fetchedAt: new Date().toISOString(),
