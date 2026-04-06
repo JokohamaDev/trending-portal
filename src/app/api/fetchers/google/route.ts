@@ -14,7 +14,7 @@ interface GoogleTrendItem {
 }
 
 // Parse Google Trends RSS feed (free, official)
-async function fetchFromGoogleTrendsRSS(): Promise<GoogleTrendItem[]> {
+export async function fetchFromGoogleTrendsRSS(): Promise<GoogleTrendItem[]> {
   // Google Trends RSS for Vietnam - official feed
   const rssUrl = 'https://trends.google.com/trending/rss?geo=VN';
   
