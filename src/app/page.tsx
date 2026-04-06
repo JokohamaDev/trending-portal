@@ -57,42 +57,50 @@ export default function Home() {
   const [data, setData] = useState<TrendsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchTrends = async (forceRefresh = false) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Check if mock data should be used
+      const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+      
+      if (useMockData) {
+        // Simulate network delay for mock data
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setData(mockTrendsData);
+        setLoading(false);
+        return;
+      }
+      
+      const url = forceRefresh ? '/api/trends?refresh=1' : '/api/trends';
+      const response = await fetch(url);
+      const result: ApiResponse = await response.json();
+      
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to fetch trends');
+      }
+      
+      setData(result.data);
+    } catch (err) {
+      console.error('Failed to fetch trends:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load trends');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchTrends() {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Check if mock data should be used
-        const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
-        
-        if (useMockData) {
-          // Simulate network delay for mock data
-          await new Promise(resolve => setTimeout(resolve, 500));
-          setData(mockTrendsData);
-          setLoading(false);
-          return;
-        }
-        
-        const response = await fetch('/api/trends');
-        const result: ApiResponse = await response.json();
-        
-        if (!response.ok || !result.success) {
-          throw new Error(result.error || 'Failed to fetch trends');
-        }
-        
-        setData(result.data);
-      } catch (err) {
-        console.error('Failed to fetch trends:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load trends');
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchTrends();
   }, []);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchTrends(true);
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -102,9 +110,27 @@ export default function Home() {
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
             Vietnam Trending Media
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:block">
-            Real-time charts from Spotify, YouTube, Netflix & more
-          </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleRefresh}
+              disabled={loading || refreshing}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Refresh data (bypass cache)"
+            >
+              <svg 
+                className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:block">
+              Real-time charts from Spotify, YouTube, Netflix & more
+            </p>
+          </div>
         </div>
       </header>
 
