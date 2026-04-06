@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
-import { writeFile, readFile, access } from 'fs/promises';
-import { constants } from 'fs';
-import path from 'path';
-
-const CACHE_FILE = path.join(process.cwd(), '.cache', 'spotify-charts.json');
-const CACHE_TTL_DAYS = 7;
-const CACHE_TTL_MS = CACHE_TTL_DAYS * 24 * 60 * 60 * 1000;
+import { storeCategoryDataSmart, getCategoryDataSmart, KV_KEYS } from '@/lib/kv';
+import { sanitizeTrendingItems } from '@/lib/validation';
+import type { CategoryData, TrendingItem } from '@/lib/schemas';
 
 interface SpotifyChartEntry {
   rank: number;
@@ -31,46 +27,6 @@ interface SpotifyChartResponse {
       };
     }>;
   }>;
-}
-
-interface CacheEntry {
-  data: SpotifyChartEntry[];
-  timestamp: string;
-  source: string;
-}
-
-async function readCache(): Promise<CacheEntry | null> {
-  try {
-    await access(CACHE_FILE, constants.F_OK);
-    const content = await readFile(CACHE_FILE, 'utf-8');
-    return JSON.parse(content) as CacheEntry;
-  } catch {
-    return null;
-  }
-}
-
-async function writeCache(data: SpotifyChartEntry[], source: string): Promise<void> {
-  try {
-    const cacheDir = path.dirname(CACHE_FILE);
-    await access(cacheDir, constants.F_OK).catch(async () => {
-      await import('fs/promises').then(fs => fs.mkdir(cacheDir, { recursive: true }));
-    });
-    
-    const entry: CacheEntry = {
-      data,
-      timestamp: new Date().toISOString(),
-      source,
-    };
-    await writeFile(CACHE_FILE, JSON.stringify(entry, null, 2), 'utf-8');
-  } catch (error) {
-    console.error('Failed to write cache:', error);
-  }
-}
-
-function isCacheStale(timestamp: string): boolean {
-  const cacheTime = new Date(timestamp).getTime();
-  const now = Date.now();
-  return now - cacheTime > CACHE_TTL_MS;
 }
 
 // Primary source: Spotify public charts API
@@ -159,50 +115,78 @@ async function fetchFromKworb(): Promise<SpotifyChartEntry[]> {
 }
 
 export async function GET() {
-  // Try to fetch fresh data first
   try {
-    let data: SpotifyChartEntry[];
-    let source: string;
+    let rawData: SpotifyChartEntry[];
+    let fetchSource: string;
     
+    // Try to fetch fresh data
     try {
-      data = await fetchFromSpotifyAPI();
-      source = 'spotify-api';
+      rawData = await fetchFromSpotifyAPI();
+      fetchSource = 'spotify-api';
     } catch (spotifyError) {
-      console.warn('Spotify API failed, trying Kworb fallback:', spotifyError);
-      data = await fetchFromKworb();
-      source = 'kworb';
+      console.warn('[Spotify] API failed, trying Kworb fallback:', spotifyError);
+      rawData = await fetchFromKworb();
+      fetchSource = 'kworb';
     }
     
-    // Save to cache
-    await writeCache(data, source);
+    // Validate and sanitize data
+    const validatedItems = sanitizeTrendingItems(rawData);
+    
+    if (validatedItems.length === 0) {
+      throw new Error('All fetched data failed validation');
+    }
+    
+    if (validatedItems.length < rawData.length) {
+      console.warn(`[Spotify] Filtered ${rawData.length - validatedItems.length} invalid items`);
+    }
+    
+    // Create category data structure
+    const categoryData: CategoryData = {
+      items: validatedItems,
+      lastUpdated: new Date().toISOString(),
+      source: fetchSource,
+      healthy: true,
+    };
+    
+    // Store in Redis/file cache
+    await storeCategoryDataSmart(KV_KEYS.SPOTIFY, categoryData);
+    console.log('[Spotify] Data stored successfully');
     
     return NextResponse.json({
       success: true,
-      data,
-      source,
+      data: validatedItems,
+      source: fetchSource,
       cached: false,
+      validated: true,
+      count: validatedItems.length,
     });
     
   } catch (error) {
-    console.error('Both Spotify sources failed:', error);
+    console.error('[Spotify] Both sources failed:', error);
     
-    // Try to return cached data as fallback
-    const cache = await readCache();
-    if (cache) {
+    // Try to return cached data from Redis/file
+    const cachedData = await getCategoryDataSmart(KV_KEYS.SPOTIFY);
+    
+    if (cachedData && cachedData.items.length > 0) {
+      // Check if cache is stale (older than 7 days)
+      const cacheAge = Date.now() - new Date(cachedData.lastUpdated).getTime();
+      const isStale = cacheAge > 7 * 24 * 60 * 60 * 1000;
+      
       return NextResponse.json({
         success: true,
-        data: cache.data,
-        source: cache.source,
+        data: cachedData.items,
+        source: cachedData.source,
         cached: true,
-        stale: isCacheStale(cache.timestamp),
-        cachedAt: cache.timestamp,
+        stale: isStale,
+        cachedAt: cachedData.lastUpdated,
+        error: error instanceof Error ? error.message : 'Fetch failed, using cached data',
       });
     }
     
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch Spotify charts from all sources',
+        error: 'Failed to fetch Spotify charts',
         message: error instanceof Error ? error.message : 'Unknown error',
         data: [],
       },
