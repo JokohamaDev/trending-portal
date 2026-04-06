@@ -1,3 +1,7 @@
+'use client';
+
+import { useState } from 'react';
+
 interface EmptyCategoryProps {
   title: string;
   icon?: React.ReactNode;
@@ -14,14 +18,11 @@ const humorQuotes = [
   "Trends are loading... in another dimension 🌀",
 ];
 
-// Deterministic quote based on title to prevent flickering
-function getQuote(title: string): string {
-  const index = title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % humorQuotes.length;
-  return humorQuotes[index];
-}
-
 export function EmptyCategory({ title, icon }: EmptyCategoryProps) {
-  const quote = getQuote(title);
+  // Pick random quote once per session (on mount), stays stable across re-renders
+  const [quote] = useState(() => 
+    humorQuotes[Math.floor(Math.random() * humorQuotes.length)]
+  );
 
   return (
     <section className="w-full opacity-60">
