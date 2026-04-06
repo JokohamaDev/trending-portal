@@ -76,7 +76,12 @@ export default function Home() {
       }
       
       const url = forceRefresh ? '/api/trends?refresh=1' : '/api/trends';
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: forceRefresh ? {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        } : {},
+      });
       const result: ApiResponse = await response.json();
       
       console.log('[Debug] API Response:', {
