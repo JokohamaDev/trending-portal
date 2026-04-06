@@ -87,19 +87,12 @@ export default function Home() {
       
       const url = forceRefresh ? '/api/trends?refresh=1' : '/api/trends';
       const response = await fetch(url, {
-        headers: forceRefresh ? {
+        headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
-        } : {},
+        },
       });
       const result: ApiResponse = await response.json();
-      
-      console.log('[Debug] API Response:', {
-        success: result.success,
-        hasData: !!result.data,
-        youtubeExists: !!result.data?.youtube,
-        youtubeItemCount: result.data?.youtube?.items?.length || 0,
-      });
       
       if (!response.ok || !result.success) {
         throw new Error(result.error || 'Failed to fetch trends');

@@ -14,8 +14,14 @@ const humorQuotes = [
   "Trends are loading... in another dimension 🌀",
 ];
 
+// Deterministic quote based on title to prevent flickering
+function getQuote(title: string): string {
+  const index = title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % humorQuotes.length;
+  return humorQuotes[index];
+}
+
 export function EmptyCategory({ title, icon }: EmptyCategoryProps) {
-  const quote = humorQuotes[Math.floor(Math.random() * humorQuotes.length)];
+  const quote = getQuote(title);
 
   return (
     <section className="w-full opacity-60">
