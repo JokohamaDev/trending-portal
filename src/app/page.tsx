@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { CategoryList } from '@/components/CategoryList';
 import { CategoryListSkeleton } from '@/components/CategoryListSkeleton';
 import { TrendsData } from '@/lib/schemas';
+import { mockTrendsData } from '@/lib/mockData';
 
 // Icons for categories
 function SpotifyIcon() {
@@ -61,6 +62,17 @@ export default function Home() {
       try {
         setLoading(true);
         setError(null);
+        
+        // Check if mock data should be used
+        const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+        
+        if (useMockData) {
+          // Simulate network delay for mock data
+          await new Promise(resolve => setTimeout(resolve, 500));
+          setData(mockTrendsData);
+          setLoading(false);
+          return;
+        }
         
         const response = await fetch('/api/trends');
         const result: ApiResponse = await response.json();
