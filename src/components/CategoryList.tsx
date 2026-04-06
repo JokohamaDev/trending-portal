@@ -11,12 +11,6 @@ interface CategoryListProps {
 
 export function CategoryList({ title, category, icon }: CategoryListProps) {
   const isStale = !category.healthy;
-  const lastUpdated = new Date(category.lastUpdated).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
   return (
     <section className="w-full">
@@ -28,14 +22,11 @@ export function CategoryList({ title, category, icon }: CategoryListProps) {
             {title}
           </h2>
         </div>
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
-          {isStale && (
-            <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300">
-              Stale
-            </span>
-          )}
-          <span>Updated {lastUpdated}</span>
-        </div>
+        {isStale && (
+          <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900 text-xs text-amber-700 dark:text-amber-300">
+            Stale
+          </span>
+        )}
       </div>
 
       {/* Grid */}
