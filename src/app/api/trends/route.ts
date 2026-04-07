@@ -39,12 +39,32 @@ export async function GET(request: NextRequest) {
     const refresh = searchParams.get('refresh') === '1';
     
     // Fetch all categories from Redis/file cache
-    const [spotifyRaw, youtubeRaw, netflixRaw, googleRaw] = await Promise.all([
+    let [spotifyRaw, youtubeRaw, netflixRaw, googleRaw] = await Promise.all([
       getCategoryDataSmart(KV_KEYS.SPOTIFY),
       getCategoryDataSmart(KV_KEYS.YOUTUBE),
       getCategoryDataSmart(KV_KEYS.NETFLIX),
       getCategoryDataSmart(KV_KEYS.GOOGLE),
     ]);
+    
+    // If Netflix cache is empty, fetch directly
+    if (!netflixRaw) {
+      try {
+        const netflixRes = await fetch('https://trending-portal.vercel.app/api/fetchers/netflix');
+        if (netflixRes.ok) {
+          const netflixData = await netflixRes.json();
+          if (netflixData.success && netflixData.data?.length > 0) {
+            netflixRaw = {
+              items: netflixData.data,
+              lastUpdated: new Date().toISOString(),
+              source: netflixData.source,
+              healthy: true,
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('[Trends] Failed to fetch Netflix directly:', e);
+      }
+    }
 
     // Normalize and validate data
     const spotify = normalizeCategoryData(spotifyRaw);
