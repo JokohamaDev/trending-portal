@@ -87,15 +87,16 @@ export async function GET(request: NextRequest) {
     // Normalize and validate data
     const spotify = normalizeCategoryData(spotifyRaw);
     const youtube = normalizeCategoryData(youtubeRaw);
-    let netflix = normalizeCategoryData(netflixRaw);
     const google = normalizeCategoryData(googleRaw);
     
-    // Debug Netflix normalization
-    if (netflixRaw && !netflix) {
-      console.log('[Trends] Netflix raw data exists but failed normalization');
-      console.log('[Trends] Netflix raw sample:', JSON.stringify(netflixRaw.items?.[0] || 'no items'));
-    } else if (netflix) {
-      console.log('[Trends] Netflix normalized successfully:', netflix.items.length, 'items');
+    // For Netflix, use direct data if available, otherwise try validation
+    let netflix: CategoryData | undefined;
+    if (netflixRaw) {
+      netflix = normalizeCategoryData(netflixRaw);
+      if (!netflix) {
+        console.log('[Trends] Netflix validation failed, using raw data');
+        netflix = netflixRaw;
+      }
     }
 
     const categories: TrendsData = {
