@@ -80,15 +80,12 @@ async function fetchGoogleData(): Promise<{ success: boolean; data?: TrendingIte
 
 async function fetchNetflixData(): Promise<{ success: boolean; data?: TrendingItem[]; source?: string; cached?: boolean; error?: string }> {
   try {
-    const token = process.env.APIFY_API_TOKEN;
-    if (!token) throw new Error('No APIFY_API_TOKEN');
-    const res = await fetch(`https://api.apify.com/v2/actor-tasks/netflix-top-ten-vietnam/run-sync-get-dataset-items?token=${token}`, { method: 'POST' });
-    if (!res.ok) throw new Error(`Apify ${res.status}`);
-    const data = await res.json();
-    const items = data.slice(0, 10).map((d: any, i: number) => ({ rank: i + 1, title: d.title || d.name || 'Unknown', artist: d.type === 'tv' ? 'TV Series' : 'Movie', thumbnailUrl: d.image || d.poster || null, externalUrl: d.url || `https://www.netflix.com/title/${d.netflixId || ''}`, source: 'netflix', fetchedAt: new Date().toISOString() }));
-    const validated = sanitizeTrendingItems(items);
-    await storeCategoryDataSmart(KV_KEYS.NETFLIX, { items: validated, lastUpdated: new Date().toISOString(), source: 'netflix-apify', healthy: true });
-    return { success: true, data: validated, source: 'netflix-apify' };
+    // Import and call the Netflix fetcher directly
+    const { GET: netflixGET } = await import('../fetchers/netflix/route');
+    const response = await netflixGET();
+    const data = await response.json();
+    if (!data.success || !data.data?.length) throw new Error('No Netflix data');
+    return { success: true, data: data.data, source: data.source || 'netflix-flixpatrol' };
   } catch (e) {
     const cached = await getCategoryDataSmart(KV_KEYS.NETFLIX);
     return cached?.items.length ? { success: true, data: cached.items, source: cached.source, cached: true } : { success: false, error: String(e) };
