@@ -46,8 +46,9 @@ export async function GET(request: NextRequest) {
       getCategoryDataSmart(KV_KEYS.GOOGLE),
     ]);
     
-    // If Netflix cache is empty, fetch directly
-    if (!netflixRaw) {
+    // If Netflix cache is empty or has no thumbnails, fetch directly
+    const hasNoThumbnails = netflixRaw?.items?.every((item: any) => !item.thumbnailUrl);
+    if (!netflixRaw || hasNoThumbnails) {
       try {
         const { GET: netflixGET } = await import('../fetchers/netflix/route');
         const netflixRes = await netflixGET();
