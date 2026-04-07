@@ -34,7 +34,6 @@ function normalizeCategoryData(data: unknown): CategoryData | undefined {
 }
 
 export async function GET(request: NextRequest) {
-  console.log('[Trends] API called, checking cache and fetching...');
   try {
     const { searchParams } = new URL(request.url);
     const refresh = searchParams.get('refresh') === '1';
@@ -47,49 +46,23 @@ export async function GET(request: NextRequest) {
       getCategoryDataSmart(KV_KEYS.GOOGLE),
     ]);
     
-    console.log('[Trends] Cache check complete:', { 
-      spotify: !!spotifyRaw, 
-      youtube: !!youtubeRaw, 
-      netflix: !!netflixRaw, 
-      google: !!googleRaw 
-    });
-    
     // If Netflix cache is empty, fetch directly
     if (!netflixRaw) {
-      console.log('[Trends] Netflix cache empty, attempting direct fetch...');
       try {
-        // Import Netflix fetcher directly to avoid Vercel SSO blocking
-        console.log('[Trends] Importing Netflix fetcher...');
-        const netflixModule = await import('../fetchers/netflix/route');
-        console.log('[Trends] Netflix module imported:', typeof netflixModule);
-        
-        if (!netflixModule.GET) {
-          console.error('[Trends] Netflix module has no GET export');
-        } else {
-          console.log('[Trends] Calling Netflix GET...');
-          const netflixRes = await netflixModule.GET();
-          console.log('[Trends] Netflix GET returned, status:', netflixRes.status, 'ok:', netflixRes.ok);
-          
-          const netflixData = await netflixRes.json();
-          console.log('[Trends] Netflix data parsed:', { success: netflixData.success, count: netflixData.data?.length, source: netflixData.source });
-          
-          if (netflixData.success && netflixData.data?.length > 0) {
-            netflixRaw = {
-              items: netflixData.data,
-              lastUpdated: new Date().toISOString(),
-              source: netflixData.source,
-              healthy: true,
-            };
-            console.log('[Trends] Netflix data set to netflixRaw successfully');
-          } else {
-            console.log('[Trends] Netflix data invalid:', netflixData);
-          }
+        const { GET: netflixGET } = await import('../fetchers/netflix/route');
+        const netflixRes = await netflixGET();
+        const netflixData = await netflixRes.json();
+        if (netflixData.success && netflixData.data?.length > 0) {
+          netflixRaw = {
+            items: netflixData.data,
+            lastUpdated: new Date().toISOString(),
+            source: netflixData.source,
+            healthy: true,
+          };
         }
-      } catch (e: any) {
-        console.error('[Trends] Netflix fetch error:', e.message, e.stack);
+      } catch {
+        // Netflix fetch failed, will remain unavailable
       }
-    } else {
-      console.log('[Trends] Netflix cache found');
     }
 
     // Normalize and validate data
@@ -102,7 +75,6 @@ export async function GET(request: NextRequest) {
     if (netflixRaw) {
       netflix = normalizeCategoryData(netflixRaw);
       if (!netflix) {
-        console.log('[Trends] Netflix validation failed, using raw data');
         netflix = netflixRaw;
       }
     }
