@@ -41,7 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 # local instructions
-# instruction/
+instruction/
 
 # local cache
 .cache/
