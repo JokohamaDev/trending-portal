@@ -6,6 +6,48 @@ import { CategoryListSkeleton } from '@/components/CategoryListSkeleton';
 import { TrendsData } from '@/lib/schemas';
 import { mockTrendsData } from '@/lib/mockData';
 import { EmptyCategory } from '@/components/EmptyCategory';
+import { CategoryRow } from '@/components/CategoryRow';
+import { HorizontalCard } from '@/components/HorizontalCard';
+
+// Sun icon for light mode
+function SunIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// Moon icon for dark mode
+function MoonIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+// Layout icons
+function LayoutAIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="7" height="7" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="14" y="3" width="7" height="7" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="3" y="14" width="7" height="7" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="14" y="14" width="7" height="7" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function LayoutBIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="18" height="8" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="3" y="14" width="18" height="7" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
 
 // Icons for categories
 function SpotifyIcon() {
@@ -59,6 +101,38 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [layoutStyle, setLayoutStyle] = useState<'A' | 'B'>('B');
+
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    const savedLayout = localStorage.getItem('layoutStyle');
+    
+    if (savedDarkMode !== null) {
+      setIsDarkMode(savedDarkMode === 'true');
+    }
+    if (savedLayout === 'A' || savedLayout === 'B') {
+      setLayoutStyle(savedLayout);
+    }
+  }, []);
+
+  // Apply dark mode
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    }
+    localStorage.setItem('darkMode', isDarkMode.toString());
+  }, [isDarkMode]);
+
+  // Save layout preference
+  useEffect(() => {
+    localStorage.setItem('layoutStyle', layoutStyle);
+  }, [layoutStyle]);
 
   useEffect(() => {
     if (cooldownSeconds > 0) {
@@ -127,11 +201,52 @@ export default function Home() {
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
             Vietnam Trending Media
           </h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Layout Toggle */}
+            <button
+              onClick={() => setLayoutStyle(layoutStyle === 'A' ? 'B' : 'A')}
+              className="relative flex items-center w-12 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-colors"
+              title={`Switch to layout ${layoutStyle === 'A' ? 'B' : 'A'}`}
+            >
+              <span className="sr-only">Toggle layout</span>
+              <span
+                className={`absolute left-0.5 flex items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-zinc-800 shadow-sm transition-transform duration-200 ${
+                  layoutStyle === 'B' ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              >
+                {layoutStyle === 'A' ? (
+                  <LayoutAIcon className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+                ) : (
+                  <LayoutBIcon className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+                )}
+              </span>
+            </button>
+
+            {/* Dark Mode Toggle */}
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="relative w-12 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-colors"
+              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <span className="sr-only">Toggle dark mode</span>
+              <span
+                className={`absolute top-0.5 flex items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-zinc-800 shadow-sm transition-transform duration-200 ${
+                  isDarkMode ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              >
+                {isDarkMode ? (
+                  <MoonIcon className="w-3.5 h-3.5 text-indigo-500" />
+                ) : (
+                  <SunIcon className="w-3.5 h-3.5 text-amber-500" />
+                )}
+              </span>
+            </button>
+
+            {/* Refresh Button */}
             <button
               onClick={handleRefresh}
               disabled={loading || refreshing || cooldownSeconds > 0}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title={cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s to refresh again` : "Refresh data (bypass cache)"}
             >
               <svg 
@@ -142,11 +257,8 @@ export default function Home() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              {refreshing ? 'Refreshing...' : cooldownSeconds > 0 ? `Refresh (${cooldownSeconds})` : 'Refresh'}
+              {refreshing ? '...' : cooldownSeconds > 0 ? `(${cooldownSeconds})` : ''}
             </button>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:block">
-              Real-time charts from Spotify, YouTube, Netflix & more
-            </p>
           </div>
         </div>
       </header>
@@ -183,64 +295,126 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          // Data Display - Always show all 4 categories
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Spotify Category */}
-            {data?.spotify ? (
-              <CategoryList
-                title="Spotify Top 10"
-                category={data.spotify}
-                icon={<SpotifyIcon />}
-              />
-            ) : (
-              <EmptyCategory 
-                title="Spotify Top 10" 
-                icon={<SpotifyIcon />}
-              />
-            )}
+          // Data Display - Layout A or B
+          layoutStyle === 'A' ? (
+            // Layout A: 2x2 Grid
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Spotify Category */}
+              {data?.spotify ? (
+                <CategoryList
+                  title="Spotify Top 10"
+                  category={data.spotify}
+                  icon={<SpotifyIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Spotify Top 10" 
+                  icon={<SpotifyIcon />}
+                />
+              )}
 
-            {/* YouTube Category */}
-            {data?.youtube ? (
-              <CategoryList
-                title="YouTube Trending"
-                category={data.youtube}
-                icon={<YouTubeIcon />}
-              />
-            ) : (
-              <EmptyCategory 
-                title="YouTube Trending" 
-                icon={<YouTubeIcon />}
-              />
-            )}
+              {/* YouTube Category */}
+              {data?.youtube ? (
+                <CategoryList
+                  title="YouTube Trending"
+                  category={data.youtube}
+                  icon={<YouTubeIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="YouTube Trending" 
+                  icon={<YouTubeIcon />}
+                />
+              )}
 
-            {/* Netflix Category */}
-            {data?.netflix ? (
-              <CategoryList
-                title="Netflix Top 10"
-                category={data.netflix}
-                icon={<NetflixIcon />}
-              />
-            ) : (
-              <EmptyCategory 
-                title="Netflix Top 10" 
-                icon={<NetflixIcon />}
-              />
-            )}
+              {/* Netflix Category */}
+              {data?.netflix ? (
+                <CategoryList
+                  title="Netflix Top 10"
+                  category={data.netflix}
+                  icon={<NetflixIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Netflix Top 10" 
+                  icon={<NetflixIcon />}
+                />
+              )}
 
-            {/* Google Category */}
-            {data?.google ? (
-              <CategoryList
-                title="Google Search Trends"
-                category={data.google}
-                icon={<GoogleIcon />}
-              />
-            ) : (
-              <EmptyCategory 
-                title="Google Search Trends" 
-                icon={<GoogleIcon />}
-              />
-            )}
-          </div>
+              {/* Google Category */}
+              {data?.google ? (
+                <CategoryList
+                  title="Google Search Trends"
+                  category={data.google}
+                  icon={<GoogleIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Google Search Trends" 
+                  icon={<GoogleIcon />}
+                />
+              )}
+            </div>
+          ) : (
+            // Layout B: Full-width horizontal rows
+            <div className="flex flex-col gap-8">
+              {/* Spotify Category */}
+              {data?.spotify ? (
+                <CategoryRow
+                  title="Spotify Top 10"
+                  category={data.spotify}
+                  icon={<SpotifyIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Spotify Top 10" 
+                  icon={<SpotifyIcon />}
+                />
+              )}
+
+              {/* YouTube Category */}
+              {data?.youtube ? (
+                <CategoryRow
+                  title="YouTube Trending"
+                  category={data.youtube}
+                  icon={<YouTubeIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="YouTube Trending" 
+                  icon={<YouTubeIcon />}
+                />
+              )}
+
+              {/* Netflix Category */}
+              {data?.netflix ? (
+                <CategoryRow
+                  title="Netflix Top 10"
+                  category={data.netflix}
+                  icon={<NetflixIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Netflix Top 10" 
+                  icon={<NetflixIcon />}
+                />
+              )}
+
+              {/* Google Category */}
+              {data?.google ? (
+                <CategoryRow
+                  title="Google Search Trends"
+                  category={data.google}
+                  icon={<GoogleIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Google Search Trends" 
+                  icon={<GoogleIcon />}
+                />
+              )}
+            </div>
+          )
         )}
       </main>
 
