@@ -51,28 +51,37 @@ export async function GET(request: NextRequest) {
       console.log('[Trends] Netflix cache empty, attempting direct fetch...');
       try {
         // Import Netflix fetcher directly to avoid Vercel SSO blocking
-        const { GET: netflixGET } = await import('../fetchers/netflix/route');
-        console.log('[Trends] Netflix fetcher imported successfully');
-        const netflixRes = await netflixGET();
-        console.log('[Trends] Netflix fetcher executed, status:', netflixRes.status);
-        const netflixData = await netflixRes.json();
-        console.log('[Trends] Netflix response parsed, success:', netflixData.success, 'count:', netflixData.data?.length);
-        if (netflixData.success && netflixData.data?.length > 0) {
-          netflixRaw = {
-            items: netflixData.data,
-            lastUpdated: new Date().toISOString(),
-            source: netflixData.source,
-            healthy: true,
-          };
-          console.log('[Trends] Netflix data set to netflixRaw');
+        console.log('[Trends] Importing Netflix fetcher...');
+        const netflixModule = await import('../fetchers/netflix/route');
+        console.log('[Trends] Netflix module imported:', typeof netflixModule);
+        
+        if (!netflixModule.GET) {
+          console.error('[Trends] Netflix module has no GET export');
         } else {
-          console.log('[Trends] Netflix data empty or failed:', netflixData);
+          console.log('[Trends] Calling Netflix GET...');
+          const netflixRes = await netflixModule.GET();
+          console.log('[Trends] Netflix GET returned, status:', netflixRes.status, 'ok:', netflixRes.ok);
+          
+          const netflixData = await netflixRes.json();
+          console.log('[Trends] Netflix data parsed:', { success: netflixData.success, count: netflixData.data?.length, source: netflixData.source });
+          
+          if (netflixData.success && netflixData.data?.length > 0) {
+            netflixRaw = {
+              items: netflixData.data,
+              lastUpdated: new Date().toISOString(),
+              source: netflixData.source,
+              healthy: true,
+            };
+            console.log('[Trends] Netflix data set to netflixRaw successfully');
+          } else {
+            console.log('[Trends] Netflix data invalid:', netflixData);
+          }
         }
-      } catch (e) {
-        console.warn('[Trends] Failed to fetch Netflix directly:', e);
+      } catch (e: any) {
+        console.error('[Trends] Netflix fetch error:', e.message, e.stack);
       }
     } else {
-      console.log('[Trends] Netflix cache found:', netflixRaw ? 'yes' : 'no');
+      console.log('[Trends] Netflix cache found');
     }
 
     // Normalize and validate data
