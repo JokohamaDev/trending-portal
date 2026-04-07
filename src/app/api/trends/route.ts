@@ -49,17 +49,17 @@ export async function GET(request: NextRequest) {
     // If Netflix cache is empty, fetch directly
     if (!netflixRaw) {
       try {
-        const netflixRes = await fetch('https://trending-portal.vercel.app/api/fetchers/netflix');
-        if (netflixRes.ok) {
-          const netflixData = await netflixRes.json();
-          if (netflixData.success && netflixData.data?.length > 0) {
-            netflixRaw = {
-              items: netflixData.data,
-              lastUpdated: new Date().toISOString(),
-              source: netflixData.source,
-              healthy: true,
-            };
-          }
+        // Import Netflix fetcher directly to avoid Vercel SSO blocking
+        const { GET: netflixGET } = await import('../fetchers/netflix/route');
+        const netflixRes = await netflixGET();
+        const netflixData = await netflixRes.json();
+        if (netflixData.success && netflixData.data?.length > 0) {
+          netflixRaw = {
+            items: netflixData.data,
+            lastUpdated: new Date().toISOString(),
+            source: netflixData.source,
+            healthy: true,
+          };
         }
       } catch (e) {
         console.warn('[Trends] Failed to fetch Netflix directly:', e);
