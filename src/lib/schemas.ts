@@ -9,6 +9,7 @@ export const TrendingItemSchema = z.object({
   externalUrl: z.string().url(),
   source: z.string(),
   fetchedAt: z.string().datetime(),
+  type: z.enum(['movie', 'show']).optional(), // Optional field for Netflix
 });
 
 // Category-specific schemas
