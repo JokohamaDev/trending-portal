@@ -34,6 +34,7 @@ function normalizeCategoryData(data: unknown): CategoryData | undefined {
 }
 
 export async function GET(request: NextRequest) {
+  console.log('[Trends] API called, checking cache and fetching...');
   try {
     const { searchParams } = new URL(request.url);
     const refresh = searchParams.get('refresh') === '1';
@@ -45,6 +46,13 @@ export async function GET(request: NextRequest) {
       getCategoryDataSmart(KV_KEYS.NETFLIX),
       getCategoryDataSmart(KV_KEYS.GOOGLE),
     ]);
+    
+    console.log('[Trends] Cache check complete:', { 
+      spotify: !!spotifyRaw, 
+      youtube: !!youtubeRaw, 
+      netflix: !!netflixRaw, 
+      google: !!googleRaw 
+    });
     
     // If Netflix cache is empty, fetch directly
     if (!netflixRaw) {
