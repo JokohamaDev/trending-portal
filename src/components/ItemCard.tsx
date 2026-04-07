@@ -3,6 +3,19 @@
 import Image from 'next/image';
 import { TrendingItem } from '@/lib/schemas';
 
+function getRankBadgeClass(rank: number): string {
+  switch (rank) {
+    case 1:
+      return 'bg-gradient-to-br from-yellow-300 to-amber-500 text-amber-900 shadow-sm shadow-amber-200 dark:shadow-amber-900/30';
+    case 2:
+      return 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-700 shadow-sm shadow-slate-200 dark:shadow-slate-700/30';
+    case 3:
+      return 'bg-gradient-to-br from-orange-200 to-amber-700 text-amber-900 shadow-sm shadow-orange-200 dark:shadow-orange-900/30';
+    default:
+      return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400';
+  }
+}
+
 interface ItemCardProps {
   item: TrendingItem;
 }
@@ -13,21 +26,17 @@ export function ItemCard({ item }: ItemCardProps) {
       href={item.externalUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-center gap-3 p-3 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm transition-all duration-200"
+      className="group flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm transition-all duration-200"
     >
-      {/* Rank Badge */}
-      <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-        {item.rank}
-      </div>
-
       {/* Thumbnail */}
-      <div className="flex-shrink-0 w-12 h-12 rounded-md overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+      <div className="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-zinc-100 dark:bg-zinc-800">
         {item.thumbnailUrl ? (
           <Image
             src={item.thumbnailUrl}
             alt={item.title}
-            width={48}
-            height={48}
+            width={64}
+            height={64}
+            unoptimized
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
           />
         ) : (
@@ -61,6 +70,11 @@ export function ItemCard({ item }: ItemCardProps) {
           d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
         />
       </svg>
+
+      {/* Rank Badge */}
+      <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold ${getRankBadgeClass(item.rank)}`}>
+        {item.rank}
+      </div>
     </a>
   );
 }

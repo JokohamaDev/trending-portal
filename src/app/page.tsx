@@ -196,7 +196,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
             Vietnam Trending Media
@@ -268,10 +268,10 @@ export default function Home() {
         {loading ? (
           // Loading State
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <CategoryListSkeleton title="Spotify Top 10" icon={<SpotifyIcon />} />
-            <CategoryListSkeleton title="YouTube Trending" icon={<YouTubeIcon />} />
-            <CategoryListSkeleton title="Netflix Top 10" icon={<NetflixIcon />} />
             <CategoryListSkeleton title="Google Search Trends" icon={<GoogleIcon />} />
+            <CategoryListSkeleton title="YouTube Trending" icon={<YouTubeIcon />} />
+            <CategoryListSkeleton title="Spotify Top 10" icon={<SpotifyIcon />} />
+            <CategoryListSkeleton title="Netflix Top 10" icon={<NetflixIcon />} />
           </div>
         ) : error ? (
           // Error State
@@ -299,17 +299,17 @@ export default function Home() {
           layoutStyle === 'A' ? (
             // Layout A: 2x2 Grid
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Spotify Category */}
-              {data?.spotify ? (
+              {/* Google Category */}
+              {data?.google ? (
                 <CategoryList
-                  title="Spotify Top 10"
-                  category={data.spotify}
-                  icon={<SpotifyIcon />}
+                  title="Google Search Trends"
+                  category={data.google}
+                  icon={<GoogleIcon />}
                 />
               ) : (
                 <EmptyCategory 
-                  title="Spotify Top 10" 
-                  icon={<SpotifyIcon />}
+                  title="Google Search Trends" 
+                  icon={<GoogleIcon />}
                 />
               )}
 
@@ -327,6 +327,20 @@ export default function Home() {
                 />
               )}
 
+              {/* Spotify Category */}
+              {data?.spotify ? (
+                <CategoryList
+                  title="Spotify Top 10"
+                  category={data.spotify}
+                  icon={<SpotifyIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Spotify Top 10" 
+                  icon={<SpotifyIcon />}
+                />
+              )}
+
               {/* Netflix Category */}
               {data?.netflix ? (
                 <CategoryList
@@ -338,37 +352,23 @@ export default function Home() {
                 <EmptyCategory 
                   title="Netflix Top 10" 
                   icon={<NetflixIcon />}
-                />
-              )}
-
-              {/* Google Category */}
-              {data?.google ? (
-                <CategoryList
-                  title="Google Search Trends"
-                  category={data.google}
-                  icon={<GoogleIcon />}
-                />
-              ) : (
-                <EmptyCategory 
-                  title="Google Search Trends" 
-                  icon={<GoogleIcon />}
                 />
               )}
             </div>
           ) : (
             // Layout B: Full-width horizontal rows
             <div className="flex flex-col gap-8">
-              {/* Spotify Category */}
-              {data?.spotify ? (
+              {/* Google Category */}
+              {data?.google ? (
                 <CategoryRow
-                  title="Spotify Top 10"
-                  category={data.spotify}
-                  icon={<SpotifyIcon />}
+                  title="Google Search Trends"
+                  category={data.google}
+                  icon={<GoogleIcon />}
                 />
               ) : (
                 <EmptyCategory 
-                  title="Spotify Top 10" 
-                  icon={<SpotifyIcon />}
+                  title="Google Search Trends" 
+                  icon={<GoogleIcon />}
                 />
               )}
 
@@ -386,6 +386,20 @@ export default function Home() {
                 />
               )}
 
+              {/* Spotify Category */}
+              {data?.spotify ? (
+                <CategoryRow
+                  title="Spotify Top 10"
+                  category={data.spotify}
+                  icon={<SpotifyIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Spotify Top 10" 
+                  icon={<SpotifyIcon />}
+                />
+              )}
+
               {/* Netflix Category */}
               {data?.netflix ? (
                 <CategoryRow
@@ -397,20 +411,6 @@ export default function Home() {
                 <EmptyCategory 
                   title="Netflix Top 10" 
                   icon={<NetflixIcon />}
-                />
-              )}
-
-              {/* Google Category */}
-              {data?.google ? (
-                <CategoryRow
-                  title="Google Search Trends"
-                  category={data.google}
-                  icon={<GoogleIcon />}
-                />
-              ) : (
-                <EmptyCategory 
-                  title="Google Search Trends" 
-                  icon={<GoogleIcon />}
                 />
               )}
             </div>
