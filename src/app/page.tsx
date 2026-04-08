@@ -82,6 +82,17 @@ function GoogleIcon() {
   );
 }
 
+function NewsIcon() {
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+      <path d="M9 7h5"/>
+      <path d="M9 11h5"/>
+      <path d="M9 15h5"/>
+    </svg>
+  );
+}
+
 interface ApiResponse {
   success: boolean;
   data: TrendsData;
@@ -272,6 +283,7 @@ export default function Home() {
             <CategoryListSkeleton title="YouTube Trending" icon={<YouTubeIcon />} />
             <CategoryListSkeleton title="Spotify Top 10" icon={<SpotifyIcon />} />
             <CategoryListSkeleton title="Netflix Top 10" icon={<NetflixIcon />} />
+            <CategoryListSkeleton title="Tin Tức Tuổi Trẻ" icon={<NewsIcon />} />
           </div>
         ) : error ? (
           // Error State
@@ -354,6 +366,20 @@ export default function Home() {
                   icon={<NetflixIcon />}
                 />
               )}
+
+              {/* News Category */}
+              {data?.news ? (
+                <CategoryList
+                  title="Tin Tức Tuổi Trẻ"
+                  category={data.news}
+                  icon={<NewsIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Tin Tức Tuổi Trẻ" 
+                  icon={<NewsIcon />}
+                />
+              )}
             </div>
           ) : (
             // Layout B: Full-width horizontal rows
@@ -411,6 +437,20 @@ export default function Home() {
                 <EmptyCategory 
                   title="Netflix Top 10" 
                   icon={<NetflixIcon />}
+                />
+              )}
+
+              {/* News Category */}
+              {data?.news ? (
+                <CategoryRow
+                  title="Tin Tức Tuổi Trẻ"
+                  category={data.news}
+                  icon={<NewsIcon />}
+                />
+              ) : (
+                <EmptyCategory 
+                  title="Tin Tức Tuổi Trẻ" 
+                  icon={<NewsIcon />}
                 />
               )}
             </div>
