@@ -39,12 +39,13 @@ export async function GET(request: NextRequest) {
     const refresh = searchParams.get('refresh') === '1';
     
     // Fetch all categories from Redis/file cache
-    let [spotifyRaw, youtubeRaw, netflixRaw, googleRaw, newsRaw] = await Promise.all([
+    let [spotifyRaw, youtubeRaw, netflixRaw, googleRaw, newsRaw, steamRaw] = await Promise.all([
       getCategoryDataSmart(KV_KEYS.SPOTIFY),
       getCategoryDataSmart(KV_KEYS.YOUTUBE),
       getCategoryDataSmart(KV_KEYS.NETFLIX),
       getCategoryDataSmart(KV_KEYS.GOOGLE),
       getCategoryDataSmart(KV_KEYS.NEWS),
+      getCategoryDataSmart(KV_KEYS.STEAM),
     ]);
     
     // If refresh requested or cache empty, fetch fresh data directly
@@ -111,6 +112,7 @@ export async function GET(request: NextRequest) {
     const youtube = normalizeCategoryData(youtubeRaw);
     const google = normalizeCategoryData(googleRaw);
     const news = normalizeCategoryData(newsRaw);
+    const steam = normalizeCategoryData(steamRaw);
     
     // For Netflix, use direct data if available, otherwise try validation
     let netflix: CategoryData | undefined;
@@ -127,6 +129,7 @@ export async function GET(request: NextRequest) {
       netflix: netflix || undefined,
       google: google || undefined,
       news: news || undefined,
+      steam: steam || undefined,
       lastUpdated: new Date().toISOString(),
     };
 
@@ -138,6 +141,7 @@ export async function GET(request: NextRequest) {
       netflix,
       google,
       news,
+      steam,
     };
     
     for (const [key, data] of Object.entries(categoryMap)) {

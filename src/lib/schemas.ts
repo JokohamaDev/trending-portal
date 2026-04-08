@@ -37,6 +37,11 @@ export const NewsItemSchema = TrendingItemSchema.extend({
   source: z.literal('news'),
 });
 
+export const SteamItemSchema = TrendingItemSchema.extend({
+  source: z.literal('steam'),
+  appId: z.string().optional(),
+});
+
 // Union of all item types
 export const TrendingItemUnionSchema = z.union([
   SpotifyItemSchema,
@@ -44,6 +49,7 @@ export const TrendingItemUnionSchema = z.union([
   NetflixItemSchema,
   GoogleItemSchema,
   NewsItemSchema,
+  SteamItemSchema,
 ]);
 
 // Category data schema
@@ -61,6 +67,7 @@ export const TrendsDataSchema = z.object({
   netflix: CategoryDataSchema.optional(),
   google: CategoryDataSchema.optional(),
   news: CategoryDataSchema.optional(),
+  steam: CategoryDataSchema.optional(),
   lastUpdated: z.string().datetime(),
 });
 
@@ -71,5 +78,6 @@ export type YouTubeItem = z.infer<typeof YouTubeItemSchema>;
 export type NetflixItem = z.infer<typeof NetflixItemSchema>;
 export type GoogleItem = z.infer<typeof GoogleItemSchema>;
 export type NewsItem = z.infer<typeof NewsItemSchema>;
+export type SteamItem = z.infer<typeof SteamItemSchema>;
 export type CategoryData = z.infer<typeof CategoryDataSchema>;
 export type TrendsData = z.infer<typeof TrendsDataSchema>;

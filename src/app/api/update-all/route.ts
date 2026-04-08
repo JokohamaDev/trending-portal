@@ -106,12 +106,26 @@ async function fetchNewsData(): Promise<{ success: boolean; data?: TrendingItem[
   }
 }
 
+async function fetchSteamData(): Promise<{ success: boolean; data?: TrendingItem[]; source?: string; cached?: boolean; error?: string }> {
+  try {
+    // Import and call the Steam fetcher directly
+    const { GET: steamGET } = await import('../fetchers/steam/route');
+    const response = await steamGET();
+    const data = await response.json();
+    if (!data.success || !data.data?.length) throw new Error('No Steam data');
+    return { success: true, data: data.data, source: data.source || 'steam-api' };
+  } catch (e) {
+    const cached = await getCategoryDataSmart(KV_KEYS.STEAM);
+    return cached?.items.length ? { success: true, data: cached.items, source: cached.source, cached: true } : { success: false, error: String(e) };
+  }
+}
+
 export async function GET() {
   const start = Date.now();
-  const results = await Promise.allSettled([fetchSpotifyData(), fetchYouTubeData(), fetchGoogleData(), fetchNetflixData(), fetchNewsData()]);
+  const results = await Promise.allSettled([fetchSpotifyData(), fetchYouTubeData(), fetchGoogleData(), fetchNetflixData(), fetchNewsData(), fetchSteamData()]);
   const categories: TrendsData = { lastUpdated: new Date().toISOString() };
   const health: Record<string, { available: boolean; stale: boolean; fresh: boolean; error?: string }> = {};
-  const keys = ['spotify', 'youtube', 'google', 'netflix', 'news'] as const;
+  const keys = ['spotify', 'youtube', 'google', 'netflix', 'news', 'steam'] as const;
   
   results.forEach((r, i) => {
     const cat = keys[i];

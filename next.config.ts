@@ -27,6 +27,18 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cdn2.tuoitre.vn',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.akamai.steamstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'steamcdn-a.akamaihd.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'shared.akamai.steamstatic.com',
+      },
     ],
   },
 };

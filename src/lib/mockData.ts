@@ -365,11 +365,65 @@ export const mockNewsData = {
   healthy: true,
 };
 
+export const mockSteamData = {
+  items: [
+    {
+      rank: 1,
+      title: "Counter-Strike 2",
+      artist: "Free to Play",
+      thumbnailUrl: "https://cdn.akamai.steamstatic.com/steam/apps/730/header.jpg",
+      externalUrl: "https://store.steampowered.com/app/730",
+      source: "steam",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+    {
+      rank: 2,
+      title: "PUBG: BATTLEGROUNDS",
+      artist: "Free to Play",
+      thumbnailUrl: "https://cdn.akamai.steamstatic.com/steam/apps/578080/header.jpg",
+      externalUrl: "https://store.steampowered.com/app/578080",
+      source: "steam",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+    {
+      rank: 3,
+      title: "Black Myth: Wukong",
+      artist: "$59.99",
+      thumbnailUrl: "https://cdn.akamai.steamstatic.com/steam/apps/2358720/header.jpg",
+      externalUrl: "https://store.steampowered.com/app/2358720",
+      source: "steam",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+    {
+      rank: 4,
+      title: "Dota 2",
+      artist: "Free to Play",
+      thumbnailUrl: "https://cdn.akamai.steamstatic.com/steam/apps/570/header.jpg",
+      externalUrl: "https://store.steampowered.com/app/570",
+      source: "steam",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+    {
+      rank: 5,
+      title: "Elden Ring",
+      artist: "$59.99",
+      thumbnailUrl: "https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg",
+      externalUrl: "https://store.steampowered.com/app/1245620",
+      source: "steam",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+  ],
+  lastUpdated: "2026-04-07T04:00:00.000Z",
+  source: "steam-api",
+  healthy: true,
+};
+
 export const mockTrendsData: TrendsData = {
   spotify: mockSpotifyData,
   youtube: mockYouTubeData,
   netflix: mockNetflixData,
   google: mockGoogleData,
   news: mockNewsData,
+  steam: mockSteamData,
   lastUpdated: "2026-04-06T03:13:34.100Z",
 };
