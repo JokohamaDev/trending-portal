@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { storeCategoryDataSmart, getCategoryDataSmart } from '@/lib/kv';
+import { NextResponse, NextRequest } from 'next/server';
+import { storeCategoryDataSmart, getCategoryDataSmart, KV_KEYS } from '@/lib/kv';
 import { sanitizeTrendingItems } from '@/lib/validation';
 import type { CategoryData } from '@/lib/schemas';
 
@@ -22,7 +22,7 @@ export async function fetchFromTuoiTreRSS(): Promise<NewsItem[]> {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     },
-    next: { revalidate: 1800 }, // 30 minutes
+    next: { revalidate: 900 }, // 15 minutes
   });
 
   if (!response.ok) {
@@ -79,27 +79,21 @@ export async function fetchFromTuoiTreRSS(): Promise<NewsItem[]> {
   return items;
 }
 
-// Format RSS pubDate to readable string
+// Format RSS pubDate to HH:MM time
 function formatPubDate(pubDate: string): string {
   try {
     const date = new Date(pubDate);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `${diffMins} phút trước`;
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-    if (diffDays < 7) return `${diffDays} ngày trước`;
-    return date.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' });
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
   } catch {
-    return 'Tuoitre.vn';
+    return '';
   }
 }
 
-export async function GET() {
+export async function GET(request?: NextRequest) {
   try {
+    // Check if refresh is requested
+    const skipCache = request?.url ? new URL(request.url).searchParams.get('refresh') === '1' : false;
+    
     let rawData: NewsItem[];
 
     // Try to fetch fresh data from Tuoi Tre RSS
@@ -109,7 +103,7 @@ export async function GET() {
       console.warn('[News] RSS fetch failed, checking for cached data:', error);
 
       // Return cached data if available
-      const cachedData = await getCategoryDataSmart('trending_news');
+      const cachedData = await getCategoryDataSmart(KV_KEYS.NEWS);
 
       if (cachedData && cachedData.items.length > 0) {
         const cacheAge = Date.now() - new Date(cachedData.lastUpdated).getTime();
@@ -149,7 +143,7 @@ export async function GET() {
     };
 
     // Store in Redis/file cache
-    await storeCategoryDataSmart('trending_news', categoryData);
+    await storeCategoryDataSmart(KV_KEYS.NEWS, categoryData);
     console.log('[News] Data stored successfully');
 
     return NextResponse.json({
@@ -165,7 +159,7 @@ export async function GET() {
     console.error('[News] Failed to fetch:', error);
 
     // Try to return cached data from Redis/file
-    const cachedData = await getCategoryDataSmart('trending_news');
+    const cachedData = await getCategoryDataSmart(KV_KEYS.NEWS);
 
     if (cachedData && cachedData.items.length > 0) {
       const cacheAge = Date.now() - new Date(cachedData.lastUpdated).getTime();

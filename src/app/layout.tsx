@@ -37,7 +37,29 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var darkMode = localStorage.getItem('darkMode');
+                  if (darkMode !== null) {
+                    if (darkMode === 'true') {
+                      document.documentElement.classList.add('dark');
+                    }
+                  } else {
+                    // Default to dark if no preference
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       {gaId && <GoogleAnalytics gaId={gaId} />}
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

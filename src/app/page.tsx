@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { CategoryList } from '@/components/CategoryList';
 import { CategoryListSkeleton } from '@/components/CategoryListSkeleton';
+import { CategoryRowSkeleton } from '@/components/CategoryRowSkeleton';
 import { TrendsData } from '@/lib/schemas';
 import { mockTrendsData } from '@/lib/mockData';
 import { EmptyCategory } from '@/components/EmptyCategory';
@@ -112,21 +113,22 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [layoutStyle, setLayoutStyle] = useState<'A' | 'B'>('B');
+  // Sync localStorage read for initial state (must match layout.tsx script)
+  const getInitialDarkMode = () => {
+    if (typeof window === 'undefined') return true; // Default for SSR
+    const saved = localStorage.getItem('darkMode');
+    if (saved !== null) return saved === 'true';
+    return true; // Default to dark
+  };
 
-  // Load preferences from localStorage on mount
-  useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode');
-    const savedLayout = localStorage.getItem('layoutStyle');
-    
-    if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === 'true');
-    }
-    if (savedLayout === 'A' || savedLayout === 'B') {
-      setLayoutStyle(savedLayout);
-    }
-  }, []);
+  const getInitialLayout = () => {
+    if (typeof window === 'undefined') return 'A';
+    const saved = localStorage.getItem('layoutStyle');
+    return saved === 'A' || saved === 'B' ? saved : 'A';
+  };
+
+  const [isDarkMode, setIsDarkMode] = useState(getInitialDarkMode);
+  const [layoutStyle, setLayoutStyle] = useState<'A' | 'B'>(getInitialLayout);
 
   // Apply dark mode
   useEffect(() => {
@@ -210,7 +212,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-            Vietnam Trending Media
+            Vietnam Trending
           </h1>
           <div className="flex items-center gap-3">
             {/* Layout Toggle */}
@@ -277,14 +279,22 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
-          // Loading State
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <CategoryListSkeleton title="Google Search Trends" icon={<GoogleIcon />} />
-            <CategoryListSkeleton title="YouTube Trending" icon={<YouTubeIcon />} />
-            <CategoryListSkeleton title="Spotify Top 10" icon={<SpotifyIcon />} />
-            <CategoryListSkeleton title="Netflix Top 10" icon={<NetflixIcon />} />
-            <CategoryListSkeleton title="Tin Tức Tuổi Trẻ" icon={<NewsIcon />} />
-          </div>
+          // Loading State - matches current layout
+          layoutStyle === 'A' ? (
+            // Type A: 3 column grid skeleton
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <CategoryListSkeleton title="Loading..." />
+              <CategoryListSkeleton title="Loading..." />
+              <CategoryListSkeleton title="Loading..." />
+            </div>
+          ) : (
+            // Type B: Horizontal row skeletons
+            <div className="flex flex-col gap-8">
+              <CategoryRowSkeleton />
+              <CategoryRowSkeleton />
+              <CategoryRowSkeleton />
+            </div>
+          )
         ) : error ? (
           // Error State
           <div className="flex flex-col items-center justify-center py-20">
@@ -309,8 +319,8 @@ export default function Home() {
         ) : (
           // Data Display - Layout A or B
           layoutStyle === 'A' ? (
-            // Layout A: 2x2 Grid
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            // Layout A: 3 columns grid
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Google Category */}
               {data?.google ? (
                 <CategoryList

@@ -3,18 +3,6 @@
 import Image from 'next/image';
 import { TrendingItem } from '@/lib/schemas';
 
-function getRankBadgeClass(rank: number): string {
-  switch (rank) {
-    case 1:
-      return 'bg-gradient-to-br from-yellow-300 to-amber-500 text-amber-900 shadow-sm shadow-amber-200 dark:shadow-amber-900/30';
-    case 2:
-      return 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-700 shadow-sm shadow-slate-200 dark:shadow-slate-700/30';
-    case 3:
-      return 'bg-gradient-to-br from-orange-200 to-amber-700 text-amber-900 shadow-sm shadow-orange-200 dark:shadow-orange-900/30';
-    default:
-      return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400';
-  }
-}
 
 interface ItemCardProps {
   item: TrendingItem;
@@ -28,8 +16,12 @@ export function ItemCard({ item }: ItemCardProps) {
       rel="noopener noreferrer"
       className="group flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm transition-all duration-200"
     >
-      {/* Thumbnail */}
-      <div className="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+      {/* Thumbnail with Rank Badge */}
+      <div className="relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+        {/* Rank Badge - Top Left */}
+        <div className="absolute top-1 left-1 z-10 w-5 h-5 flex items-center justify-center rounded-full text-xs font-semibold bg-zinc-200/90 dark:bg-zinc-800/90 text-zinc-600 dark:text-zinc-300">
+          {item.rank}
+        </div>
         {item.thumbnailUrl ? (
           <Image
             src={item.thumbnailUrl}
@@ -48,7 +40,7 @@ export function ItemCard({ item }: ItemCardProps) {
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 h-10 leading-5 overflow-hidden line-clamp-2 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
           {item.title}
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
@@ -56,25 +48,6 @@ export function ItemCard({ item }: ItemCardProps) {
         </p>
       </div>
 
-      {/* External Link Icon */}
-      <svg
-        className="flex-shrink-0 w-4 h-4 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-        />
-      </svg>
-
-      {/* Rank Badge */}
-      <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold ${getRankBadgeClass(item.rank)}`}>
-        {item.rank}
-      </div>
     </a>
   );
 }

@@ -6,6 +6,7 @@ const KV_KEYS = {
   YOUTUBE: 'trending_youtube',
   NETFLIX: 'trending_netflix',
   GOOGLE: 'trending_google',
+  NEWS: 'trending_news',
   ALL: 'trending_all',
 } as const;
 

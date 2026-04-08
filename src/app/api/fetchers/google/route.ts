@@ -22,7 +22,7 @@ export async function fetchFromGoogleTrendsRSS(): Promise<GoogleTrendItem[]> {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     },
-    next: { revalidate: 3600 },
+    next: { revalidate: 1800 }, // 30 minutes
   });
 
   if (!response.ok) {

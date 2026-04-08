@@ -312,10 +312,64 @@ export const mockGoogleData = {
   healthy: true,
 };
 
+export const mockNewsData = {
+  items: [
+    {
+      rank: 1,
+      title: "Thủ phạm thầm lặng làm tăng gấp 5 lần nguy cơ bệnh tim mạch",
+      artist: "09:30",
+      thumbnailUrl: "https://cdn2.tuoitre.vn/zoom/260_163/2025/4/8/thumb_1200x628-2025-04-08t100300-17440802369551892606780-0-0-300-480-crop-1744080252418681119267.jpg",
+      externalUrl: "https://tuoitre.vn/thu-pham-tham-lang-lam-tang-gap-5-lan-nguy-co-benh-tim-mach-20250408092810842.htm",
+      source: "news",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+    {
+      rank: 2,
+      title: "Sau khi té ngã, cựu rơ Nguyễn Văn Bình cấp cứu",
+      artist: "08:45",
+      thumbnailUrl: null,
+      externalUrl: "https://tuoitre.vn/sau-khi-te-nga-cu-rua-nguyen-van-binh-cap-cuu-20250408090141276.htm",
+      source: "news",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+    {
+      rank: 3,
+      title: "Công an vào cuộc vụ 1 thanh niên đánh, mạng tay vào mặt CSGT",
+      artist: "07:15",
+      thumbnailUrl: "https://cdn2.tuoitre.vn/zoom/260_163/2025/4/8/avatar-2025-04-08t091056-1744078276721553443476-0-0-300-480-crop-174407830032872111130.jpg",
+      externalUrl: "https://tuoitre.vn/cong-an-vao-cuoc-vu-1-thanh-nien-danh-mang-tay-vao-mat-csgt-20250408085736452.htm",
+      source: "news",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+    {
+      rank: 4,
+      title: "Ngứa kéo dài có thể là dấu hiệu cảnh báo bệnh lý",
+      artist: "06:00",
+      thumbnailUrl: null,
+      externalUrl: "https://tuoitre.vn/ngua-keo-dai-co-the-la-dau-hieu-canh-bao-benh-ly-20250408082448073.htm",
+      source: "news",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+    {
+      rank: 5,
+      title: "Chứng khoán 8-4: Dòng vốn khối ngoại đã quay lại",
+      artist: "05:30",
+      thumbnailUrl: "https://cdn2.tuoitre.vn/zoom/260_163/2025/4/8/avatar-2025-04-08t082404-17440754542611869349853-0-0-300-480-crop-1744075467509613384869.jpg",
+      externalUrl: "https://tuoitre.vn/chung-khoan-8-4-dong-von-khoi-ngoai-da-quay-lai-20250408082422969.htm",
+      source: "news",
+      fetchedAt: "2026-04-07T04:00:00.000Z",
+    },
+  ],
+  lastUpdated: "2026-04-07T04:00:00.000Z",
+  source: "tuoitre-rss",
+  healthy: true,
+};
+
 export const mockTrendsData: TrendsData = {
   spotify: mockSpotifyData,
   youtube: mockYouTubeData,
   netflix: mockNetflixData,
   google: mockGoogleData,
+  news: mockNewsData,
   lastUpdated: "2026-04-06T03:13:34.100Z",
 };

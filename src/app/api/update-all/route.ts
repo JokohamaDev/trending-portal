@@ -101,7 +101,7 @@ async function fetchNewsData(): Promise<{ success: boolean; data?: TrendingItem[
     if (!data.success || !data.data?.length) throw new Error('No News data');
     return { success: true, data: data.data, source: data.source || 'tuoitre-rss' };
   } catch (e) {
-    const cached = await getCategoryDataSmart('trending_news');
+    const cached = await getCategoryDataSmart(KV_KEYS.NEWS);
     return cached?.items.length ? { success: true, data: cached.items, source: cached.source, cached: true } : { success: false, error: String(e) };
   }
 }
