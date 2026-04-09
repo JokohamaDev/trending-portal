@@ -51,7 +51,7 @@ export function HorizontalCard({ item }: HorizontalCardProps) {
 
       {/* Content - Bottom */}
       <div className="p-3 flex flex-col gap-1">
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 h-10 leading-5 overflow-hidden line-clamp-2">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 h-10 leading-5 overflow-hidden line-clamp-2 group-hover:text-accent dark:group-hover:text-accent transition-colors">
           {item.title}
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">

@@ -79,11 +79,16 @@ export async function fetchFromTuoiTreRSS(): Promise<NewsItem[]> {
   return items;
 }
 
-// Format RSS pubDate to HH:MM time
+// Format RSS pubDate to HH:MM time (Vietnam timezone)
 function formatPubDate(pubDate: string): string {
   try {
     const date = new Date(pubDate);
-    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return date.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Ho_Chi_Minh'
+    });
   } catch {
     return '';
   }

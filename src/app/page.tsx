@@ -523,7 +523,8 @@ export default function Home() {
                   day: 'numeric',
                   hour: '2-digit',
                   minute: '2-digit',
-                })}`
+                  timeZone: 'Asia/Ho_Chi_Minh',
+                })} (GMT+7)`
               : 'Loading...'}
           </p>
         </div>
