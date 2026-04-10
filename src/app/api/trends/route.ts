@@ -167,7 +167,7 @@ export async function GET(request: NextRequest) {
         headers: refresh ? {
           'Cache-Control': 'no-store',
         } : {
-          'Cache-Control': 'public, max-age=21600, stale-while-revalidate=43200',
+          'Cache-Control': 'public, max-age=300, stale-while-revalidate=900',
         }
       }
     );

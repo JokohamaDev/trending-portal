@@ -289,11 +289,8 @@ export default function Home() {
         {loading ? (
           // Loading State - matches current layout
           layoutStyle === 'A' ? (
-            // Type A: 3 column grid skeleton (2 rows for 6 categories)
+            // Type A: 3 column grid skeleton (only show example 3 categories)
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <CategoryListSkeleton title="Loading..." />
-              <CategoryListSkeleton title="Loading..." />
-              <CategoryListSkeleton title="Loading..." />
               <CategoryListSkeleton title="Loading..." />
               <CategoryListSkeleton title="Loading..." />
               <CategoryListSkeleton title="Loading..." />
@@ -301,9 +298,6 @@ export default function Home() {
           ) : (
             // Type B: Horizontal row skeletons
             <div className="flex flex-col gap-8">
-              <CategoryRowSkeleton />
-              <CategoryRowSkeleton />
-              <CategoryRowSkeleton />
               <CategoryRowSkeleton />
               <CategoryRowSkeleton />
               <CategoryRowSkeleton />
@@ -418,6 +412,7 @@ export default function Home() {
                   icon={<SteamIcon />}
                 />
               )}
+
             </div>
           ) : (
             // Layout B: Full-width horizontal rows
@@ -505,6 +500,7 @@ export default function Home() {
                   icon={<SteamIcon />}
                 />
               )}
+
             </div>
           )
         )}
