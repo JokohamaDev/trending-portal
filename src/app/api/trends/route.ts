@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCategoryDataSmart, storeCategoryDataSmart, KV_KEYS } from '@/lib/kv';
 import { validateCategoryData } from '@/lib/validation';
+import { validateSearchParams, TrendsQuerySchema } from '@/lib/apiValidation';
+import { config } from '@/lib/config';
+import { deduplicatedFetch } from '@/lib/requestDeduplicator';
 import type { TrendsData, CategoryData } from '@/lib/schemas';
-
-const CACHE_TTL_HOURS = 1;
-const CACHE_TTL_MS = CACHE_TTL_HOURS * 60 * 60 * 1000;
-
-// News cache: 15 minutes (time-sensitive)
-const NEWS_CACHE_TTL_MINUTES = 15;
-const NEWS_CACHE_TTL_MS = NEWS_CACHE_TTL_MINUTES * 60 * 1000;
 
 function isDataStale(lastUpdated: string, isNews = false): boolean {
   const lastUpdateTime = new Date(lastUpdated).getTime();
   const now = Date.now();
-  const ttl = isNews ? NEWS_CACHE_TTL_MS : CACHE_TTL_MS;
+  const ttl = isNews ? config.cache.newsCacheTtlMs : config.cache.defaultTtlMs;
   return now - lastUpdateTime > ttl;
 }
 
@@ -41,16 +37,30 @@ function normalizeCategoryData(data: unknown): CategoryData | undefined {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const refresh = searchParams.get('refresh') === '1';
     
-    // Fetch all categories from Redis/file cache
+    // Validate query parameters
+    const validation = validateSearchParams(searchParams, TrendsQuerySchema);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid query parameters',
+          message: validation.error,
+        },
+        { status: 400 }
+      );
+    }
+    
+    const refresh = validation.data.refresh === '1';
+    
+    // Fetch all categories from Redis/file cache with deduplication
     let [spotifyRaw, youtubeRaw, netflixRaw, googleRaw, newsRaw, steamRaw] = await Promise.all([
-      getCategoryDataSmart(KV_KEYS.SPOTIFY),
-      getCategoryDataSmart(KV_KEYS.YOUTUBE),
-      getCategoryDataSmart(KV_KEYS.NETFLIX),
-      getCategoryDataSmart(KV_KEYS.GOOGLE),
-      getCategoryDataSmart(KV_KEYS.NEWS),
-      getCategoryDataSmart(KV_KEYS.STEAM),
+      deduplicatedFetch('spotify', { refresh }, () => getCategoryDataSmart(KV_KEYS.SPOTIFY)),
+      deduplicatedFetch('youtube', { refresh }, () => getCategoryDataSmart(KV_KEYS.YOUTUBE)),
+      deduplicatedFetch('netflix', { refresh }, () => getCategoryDataSmart(KV_KEYS.NETFLIX)),
+      deduplicatedFetch('google', { refresh }, () => getCategoryDataSmart(KV_KEYS.GOOGLE)),
+      deduplicatedFetch('news', { refresh }, () => getCategoryDataSmart(KV_KEYS.NEWS)),
+      deduplicatedFetch('steam', { refresh }, () => getCategoryDataSmart(KV_KEYS.STEAM)),
     ]);
     
     // If refresh requested, cache empty, or news is stale (>15 min), fetch fresh data
