@@ -6,10 +6,15 @@ import type { TrendsData, CategoryData } from '@/lib/schemas';
 const CACHE_TTL_HOURS = 1;
 const CACHE_TTL_MS = CACHE_TTL_HOURS * 60 * 60 * 1000;
 
-function isDataStale(lastUpdated: string): boolean {
+// News cache: 15 minutes (time-sensitive)
+const NEWS_CACHE_TTL_MINUTES = 15;
+const NEWS_CACHE_TTL_MS = NEWS_CACHE_TTL_MINUTES * 60 * 1000;
+
+function isDataStale(lastUpdated: string, isNews = false): boolean {
   const lastUpdateTime = new Date(lastUpdated).getTime();
   const now = Date.now();
-  return now - lastUpdateTime > CACHE_TTL_MS;
+  const ttl = isNews ? NEWS_CACHE_TTL_MS : CACHE_TTL_MS;
+  return now - lastUpdateTime > ttl;
 }
 
 function normalizeCategoryData(data: unknown): CategoryData | undefined {
@@ -48,8 +53,9 @@ export async function GET(request: NextRequest) {
       getCategoryDataSmart(KV_KEYS.STEAM),
     ]);
     
-    // If refresh requested or cache empty, fetch fresh data directly
-    if (refresh || !newsRaw) {
+    // If refresh requested, cache empty, or news is stale (>15 min), fetch fresh data
+    const newsIsStale = newsRaw ? isDataStale(newsRaw.lastUpdated, true) : false;
+    if (refresh || !newsRaw || newsIsStale) {
       try {
         const { fetchFromTuoiTreRSS } = await import('../fetchers/news/route');
         const newsItems = await fetchFromTuoiTreRSS();
