@@ -3,6 +3,14 @@
 import { LayoutAIcon, LayoutBIcon, SunIcon, MoonIcon } from './icons';
 import { config } from '@/lib/config';
 
+function AppLogo({ className = 'w-6 h-6' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V13H22V18C22 20.2091 20.2091 22 18 22H6L5.79395 21.9951C3.68056 21.8879 2 20.14 2 18V6C2 3.79086 3.79086 2 6 2H11V4ZM17 17H15V13L17 11V17ZM18 2C20.2091 2 22 3.79086 22 6V11H20V6C20 5.8211 19.9738 5.64841 19.9297 5.4834L8.70703 16.707C8.42103 16.993 7.99086 17.0786 7.61719 16.9238C7.24359 16.769 7 16.4044 7 16V7H9V13.5859L18.5156 4.06934C18.351 4.02547 18.1785 4 18 4H13V2H18Z" fill="currentColor"/>
+    </svg>
+  );
+}
+
 interface HeaderProps {
   isDarkMode: boolean;
   layoutStyle: 'A' | 'B';
@@ -27,9 +35,12 @@ export function Header({
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-          Vietnam Trending
-        </h1>
+        <div className="flex items-center gap-2">
+          <AppLogo className="w-6 h-6 text-accent" />
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+            Vietnam Trending
+          </h1>
+        </div>
         <div className="flex items-center gap-3">
           {/* Layout Toggle */}
           <button

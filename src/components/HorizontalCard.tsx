@@ -9,8 +9,8 @@ function getAspectRatioClass(source: string): string {
     case 'netflix': return 'aspect-[2/3]';     // Portrait poster
     case 'google': return 'aspect-[3/2]';      // 3:2 landscape
     case 'news': return 'aspect-[3/2]';        // 3:2 landscape
-    case 'spotify':
-    default: return 'aspect-square';           // 1:1
+    case 'spotify': return 'aspect-square';    // 1:1
+    default: return '';                        // Auto height (no aspect ratio)
   }
 }
 

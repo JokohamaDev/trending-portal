@@ -15,12 +15,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Vietnam Trending Media Dashboard | Real-time Charts",
-  description: "Discover what's trending in Vietnam across Spotify, YouTube, Netflix, and Google Search. Real-time updated charts for music, videos, movies, and search trends.",
-  keywords: ["Vietnam", "trending", "Spotify", "YouTube", "Netflix", "Google Trends", "charts", "music", "videos"],
-  authors: [{ name: "Trending Portal" }],
+  description: "Discover what's trending in Vietnam. Real-time updated charts.",
+  keywords: ["Vietnam", "trending", "Spotify", "YouTube", "Netflix", "Google Trends", "Steam", "charts", "music", "videos", "news"],
+  authors: [{ name: "AI & Jokohama" }],
   openGraph: {
     title: "Vietnam Trending Media Dashboard",
-    description: "Real-time trending charts from Spotify, YouTube, Netflix & Google for Vietnam",
+    description: "Real-time trending media & news charts for Vietnam",
     type: "website",
     locale: "en_US",
   },
