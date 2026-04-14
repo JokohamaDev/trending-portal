@@ -24,7 +24,7 @@ export function HorizontalCard({ item }: HorizontalCardProps) {
       href={item.externalUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex-shrink-0 w-44 flex flex-col rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200"
+      className="group relative flex-shrink-0 w-40 flex flex-col rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200"
     >
       {/* Rank Badge - Top Left */}
       <div className="absolute top-2 left-2 z-10 w-6 h-6 flex items-center justify-center rounded-full text-xs font-semibold bg-zinc-200/90 dark:bg-zinc-800/90 text-zinc-600 dark:text-zinc-300">

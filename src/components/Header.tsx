@@ -37,11 +37,29 @@ export function Header({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <AppLogo className="w-6 h-6 text-accent" />
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+          <h1 className="text-lg lg:text-xl font-bold text-zinc-900 dark:text-zinc-100">
             Vietnam Trending
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Refresh Button */}
+          <button
+            onClick={onRefresh}
+            disabled={loading || refreshing || cooldownSeconds > 0}
+            className="flex items-center gap-1.5 px-1.5 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title={cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s to refresh again` : "Refresh data (bypass cache)"}
+          >
+            <svg 
+              className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {refreshing ? '...' : cooldownSeconds > 0 ? `(${cooldownSeconds})` : ''}
+          </button>
+          
           {/* Layout Toggle */}
           <button
             onClick={onLayoutToggle}
@@ -82,23 +100,6 @@ export function Header({
             </span>
           </button>
 
-          {/* Refresh Button */}
-          <button
-            onClick={onRefresh}
-            disabled={loading || refreshing || cooldownSeconds > 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            title={cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s to refresh again` : "Refresh data (bypass cache)"}
-          >
-            <svg 
-              className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {refreshing ? '...' : cooldownSeconds > 0 ? `(${cooldownSeconds})` : ''}
-          </button>
         </div>
       </div>
     </header>

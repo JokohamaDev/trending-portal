@@ -11,7 +11,7 @@ export function Footer({ lastUpdated, loading, error }: FooterProps) {
     <footer className="border-t border-zinc-200 dark:border-zinc-800 mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <p className="text-sm text-zinc-500">
-          © 2026 Trending Portal v1.0.0
+          © 2026 Trending Portal v1.0.1
         </p>
         <p className="text-xs text-zinc-400">
           {!loading && !error && lastUpdated
