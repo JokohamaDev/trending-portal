@@ -1,4 +1,4 @@
-# Trending Portal v1.0.1
+# Trending Portal v1.0.2
 
 Discover what's trending in Vietnam across multiple platforms in real-time.
 
